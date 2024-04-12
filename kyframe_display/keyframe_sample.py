@@ -1,10 +1,12 @@
 import streamlit as st
 import boto3
 import botocore
+import json
 import os
 import tempfile
 import shutil
 from megfile import smart_open, smart_exists, smart_sync, smart_remove, smart_glob
+from deep_translator import GoogleTranslator
 import atexit
 import sys 
 sys.path.append("/data/webvid")
@@ -34,6 +36,9 @@ def get_cache_video(video_path):
 
 
 
+
+
+
 def main():
     
     st.set_page_config(layout="centered", page_icon="🧊", page_title="Howtolink-7M-Dataset-Visulization")
@@ -44,10 +49,8 @@ def main():
     # 选择框
     selected_child = st.selectbox(
         "Select a dataset",
-        ["internvid", "How2link", "webvid", "hdvila"],
+        ["webvid", "internvid", "How2link", "hdvila"],
     )
-
-    video_nums = 100
     
     if selected_child == "How2link":
         video_prefix = "/data/streamlit_source/keyframe_sapmle/how2link"
@@ -55,17 +58,21 @@ def main():
         video_prefix = "/data/streamlit_source/keyframe_sapmle/webvid"
     elif selected_child == "internvid":
         video_prefix = "/data/streamlit_source/keyframe_sapmle/internvid"
-        video_nums = 1000
     else:
         video_prefix = "/data/streamlit_source/keyframe_sapmle/hdvila"
     
-    value = st.slider("Select a video", 1, video_nums, 1)
+    captions = json.load(open(os.path.join(video_prefix,"caption.json"),'r'))
+    
+    value = st.slider("Select a video", 1, 1000, 1)
     
 
 #   ================== 展示视频和关键帧 ==================
     st.write('## Show the video')
     video_path = os.path.join(video_prefix, f"{value}.mp4")
     st.video(video_path)
+    # if selected_child != "internvid":
+    st.write(captions[str(value)])
+    st.write(GoogleTranslator(source='en', target='zh-CN').translate(captions[str(value)]))
     
     Iframes, _ , _ = extract_keyframes(video_path,"I")
     
