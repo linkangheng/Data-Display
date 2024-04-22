@@ -9,8 +9,9 @@ from megfile import smart_open, smart_exists, smart_sync, smart_remove, smart_gl
 from deep_translator import GoogleTranslator
 import atexit
 import sys 
-sys.path.append("/data/webvid")
-from video_sample import extract_keyframes
+sys.path.append("/data/video_pack")
+import samplers
+# from samplers import KF_sampler
 
 
 def cleanup(local_file_path):
@@ -35,10 +36,6 @@ def get_cache_video(video_path):
     return cache_video_path
 
 
-
-
-
-
 def main():
     
     st.set_page_config(layout="centered", page_icon="🧊", page_title="Howtolink-7M-Dataset-Visulization")
@@ -49,42 +46,38 @@ def main():
     # 选择框
     selected_child = st.selectbox(
         "Select a dataset",
-        ["webvid", "internvid", "How2link", "hdvila"],
+        ["momentor", "webvid", "internvid", "How2link", "hdvila"],
     )
     
-    if selected_child == "How2link":
-        video_prefix = "/data/streamlit_source/keyframe_sapmle/how2link"
-    elif selected_child == "webvid":
-        video_prefix = "/data/streamlit_source/keyframe_sapmle/webvid"
-    elif selected_child == "internvid":
-        video_prefix = "/data/streamlit_source/keyframe_sapmle/internvid"
-    else:
-        video_prefix = "/data/streamlit_source/keyframe_sapmle/hdvila"
+    video_prefix = os.path.join("/data/streamlit_source/keyframe_sapmle/", selected_child)
     
-    captions = json.load(open(os.path.join(video_prefix,"caption.json"),'r'))
+    captions = json.load(open(os.path.join(video_prefix.lower(),"caption.json"),'r'))
     
     value = st.slider("Select a video", 1, 1000, 1)
     
 
-#   ================== 展示视频和关键帧 ==================
+#   ================== 展示视频和caption ==================
     st.write('## Show the video')
-    video_path = os.path.join(video_prefix, f"{value}.mp4")
+    video_path = os.path.join(video_prefix.lower(), f"{value}.mp4")
     st.video(video_path)
     # if selected_child != "internvid":
     st.write(captions[str(value)])
-    st.write(GoogleTranslator(source='en', target='zh-CN').translate(captions[str(value)]))
+    # st.write(GoogleTranslator(source='en', target='zh-CN').translate(captions[str(value)]))
     
-    Iframes, _ , _ = extract_keyframes(video_path,"I")
     
-    st.write('## Show the IFrames:')
-    for i in Iframes:
-        st.image(i)
+#   ================== 展示关键帧 ==================
+    # KF_sample 部分因为import 出问题了，需要找时间debug一下
+    # Iframes, _ , _ = samplers.KF_sampler(video_path,"I")
+    
+    # st.write('## Show the IFrames:')
+    # for i in Iframes:
+    #     st.image(i)
 
-    st.write('## Show the PFrames:')
+    # st.write('## Show the PFrames:')
     
-    Pframes, _ , _ = extract_keyframes(video_path,"P")
-    for i in Pframes:
-        st.image(i)
+    # Pframes, _ , _ = samplers.KF_sampler(video_path,"P")
+    # for i in Pframes:
+    #     st.image(i)
 
 if __name__ == '__main__':
     main()
